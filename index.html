@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Котоглот — скоро запуск | ИИ-переводчик с кошачьего</title>
+<meta name="description" content="Котоглот — ИИ, который переводит с кошачьего на человеческий: эмоция по фото, видео и мяуканью, шуточная фраза от кота и совет хозяину. Оставьте почту и получите ранний доступ.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Котоглот — ИИ-переводчик с кошачьего на человеческий">
+<meta property="og:description" content="Анализ фото, видео и аудио с котом: эмоция, перевод и совет. Ранний доступ открыт — оставьте почту.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Котоглот — скоро запуск">
+<meta name="twitter:description" content="ИИ-переводчик с кошачьего: эмоция, фраза от кота и совет хозяину.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFF8F0">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14111F">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF7A3D'/%3E%3Cpath d='M16 26 13 9l15 8h8l15-8-3 17v9a17 17 0 0 1-34 0z' fill='%231F1A2E'/%3E%3Ccircle cx='25' cy='34' r='3.2' fill='%23FFF8F0'/%3E%3Ccircle cx='39' cy='34' r='3.2' fill='%23FFF8F0'/%3E%3Cpath d='M32 40l-3.4 3.2h6.8z' fill='%23FF4F8B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Unbounded:wght@700&display=swap">
+<style>
+/* ===== 1. ТОКЕНЫ, ТЕМЫ, БАЗА ===== */
+:root{
+  --color-bg:#FFF8F0; --color-surface:#FFFFFF; --color-ink:#1F1A2E; --color-ink-soft:#5B5670;
+  --color-primary:#FF7A3D; --color-secondary:#7B5CFF; --color-accent:#2EC4A6;
+  --color-warning:#FFC23D; --color-danger:#FF4F6D; --color-magenta:#FF4F8B;
+  --gradient-hero:linear-gradient(135deg,#FF7A3D,#FF4F8B,#7B5CFF);
+  --gradient-soft:linear-gradient(180deg,#FFF8F0,#F3EEFF);
+  --color-line:rgba(31,26,46,.10);
+  --shadow-s:0 2px 10px rgba(31,26,46,.06);
+  --shadow-m:0 18px 40px -18px rgba(31,26,46,.28);
+  --shadow-glow:0 18px 44px -14px rgba(123,92,255,.55);
+  --r-s:12px; --r-m:20px; --r-l:32px; --r-pill:999px;
+  --font-head:'Unbounded','Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --header-h:70px;
+  --pad:clamp(16px,4vw,32px);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --color-bg:#14111F; --color-surface:#1F1A2E; --color-ink:#F5F2FF; --color-ink-soft:#BDB6D6;
+    --gradient-soft:linear-gradient(180deg,#14111F,#1B1630);
+    --color-line:rgba(245,242,255,.12);
+    --shadow-s:0 2px 12px rgba(0,0,0,.35);
+    --shadow-m:0 18px 40px -18px rgba(0,0,0,.6);
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--gradient-soft) var(--color-bg);color:var(--color-ink);
+  font-family:var(--font-body);font-size:clamp(15px,.4vw + 14px,17px);line-height:1.6;
+  min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-head);font-weight:700;line-height:1.14;margin:0;letter-spacing:-.02em}
+h1{font-size:clamp(1.85rem,5vw,3.3rem)}
+h2{font-size:clamp(1.45rem,3.2vw,2.3rem)}
+h3{font-size:clamp(1.05rem,1.4vw,1.25rem)}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+ul,ol{margin:0;padding:0;list-style:none}
+svg{display:block;max-width:100%;height:auto}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--color-secondary);outline-offset:2px;border-radius:6px}
+::selection{background:rgba(123,92,255,.3)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* Скроллбар в палитре страницы */
+html{scrollbar-width:thin;scrollbar-color:#FF7A3D var(--color-bg)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--color-bg)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--color-primary),var(--color-secondary));border-radius:var(--r-pill)}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#FF6A28,var(--color-magenta))}
+
+/* ===== 2. ФОН: ЛАПКИ + ЗЕРНО ===== */
+.bg-decor{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-grain{position:absolute;inset:0;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+.paw-float{position:absolute;color:var(--color-secondary);opacity:.10}
+.paw-float.p1{width:190px;top:8%;left:-48px;animation:float1 15s ease-in-out infinite}
+.paw-float.p2{width:132px;top:52%;right:-30px;color:var(--color-primary);animation:float2 18s ease-in-out infinite 1.6s}
+.paw-float.p3{width:96px;bottom:6%;left:18%;color:var(--color-accent);animation:float3 21s ease-in-out infinite 3s}
+@keyframes float1{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-38px) rotate(9deg)}}
+@keyframes float2{0%,100%{transform:translateY(0) rotate(12deg)}50%{transform:translateY(34px) rotate(-7deg)}}
+@keyframes float3{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-26px) rotate(18deg)}}
+
+/* ===== 3. СЛОИ, КОНТЕЙНЕР, ТИПОГРАФИКА ===== */
+.shell{position:relative;z-index:1}
+.container{width:100%;max-width:1180px;margin-inline:auto;padding-inline:var(--pad)}
+.section{padding-block:clamp(50px,7vw,96px);scroll-margin-top:calc(var(--header-h) + 14px)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--color-secondary)}
+.eyebrow::before{content:"";width:26px;height:2px;border-radius:2px;background:var(--gradient-hero)}
+.section-head{max-width:660px;margin-bottom:clamp(24px,3vw,40px)}
+.section-head h2{margin-top:12px}
+.section-head p{color:var(--color-ink-soft);margin-top:12px}
+.grad-text{background:var(--gradient-hero);-webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent}
+[data-reveal]{opacity:0;transform:translateY(22px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1);transition-delay:var(--d,0s)}
+[data-reveal].is-in{opacity:1;transform:none}
+
+/* ===== 4. КНОПКИ, ЧИПЫ ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;
+  border-radius:var(--r-pill);padding:14px 26px;font-weight:700;font-size:.95rem;cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,color .18s ease;
+  -webkit-tap-highlight-color:transparent}
+.btn-primary{background:var(--gradient-hero);background:var(--gradient-hero);color:#fff;box-shadow:var(--shadow-glow)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 22px 50px -12px rgba(123,92,255,.72)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:transparent;color:var(--color-ink);border-color:var(--color-line);box-shadow:var(--shadow-s)}
+.btn-ghost:hover{transform:translateY(-2px);border-color:var(--color-secondary);color:var(--color-secondary)}
+.btn-white{background:#fff;color:#1F1A2E}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 18px 34px -14px rgba(0,0,0,.5)}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:var(--r-pill);
+  background:var(--color-surface);border:1px solid var(--color-line);font-size:.85rem;font-weight:600;box-shadow:var(--shadow-s)}
+.chip svg{width:18px;height:18px;color:var(--color-secondary)}
+.link-btn{background:none;border:0;padding:0;cursor:pointer;color:var(--color-ink-soft);
+  font-size:.92rem;font-weight:600;text-align:left;width:fit-content;transition:color .2s ease}
+.link-btn:hover{color:var(--color-secondary)}
+
+/* ===== 5. ШАПКА ===== */
+.header{position:sticky;top:0;z-index:60;height:var(--header-h);
+  transition:background-color .25s ease,box-shadow .25s ease}
+.header.is-stuck{background:rgba(255,248,240,.78);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:0 10px 30px -18px rgba(31,26,46,.45),inset 0 -1px 0 var(--color-line)}
+@media (prefers-color-scheme: dark){.header.is-stuck{background:rgba(31,26,46,.78)}}
+.header-in{display:flex;align-items:center;gap:14px;height:var(--header-h)}
+.logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;
+  font-size:1.02rem;letter-spacing:-.01em;flex:none}
+.logo svg{width:38px;height:38px;flex:none}
+.nav{display:flex;align-items:center;gap:6px;margin-left:auto}
+.nav a{padding:9px 14px;border-radius:var(--r-pill);font-size:.9rem;font-weight:600;color:var(--color-ink-soft);
+  transition:color .2s ease,background-color .2s ease}
+.nav a:hover{color:var(--color-ink);background:rgba(123,92,255,.12)}
+.nav a[aria-current="true"]{color:var(--color-secondary);background:rgba(123,92,255,.16)}
+.nav .nav-cta{color:#fff;background:var(--gradient-hero);box-shadow:var(--shadow-glow)}
+.nav .nav-cta:hover{color:#fff}
+.burger{display:none;width:46px;height:46px;margin-left:auto;flex:none;border:1px solid var(--color-line);
+  border-radius:14px;background:var(--color-surface);cursor:pointer;padding:0;position:relative;box-shadow:var(--shadow-s)}
+.burger span{position:absolute;left:13px;width:20px;height:2px;border-radius:2px;background:var(--color-ink);
+  transition:transform .3s cubic-bezier(.3,.7,.3,1),opacity .2s ease}
+.burger span:nth-child(1){top:16px}
+.burger span:nth-child(2){top:22px}
+.burger span:nth-child(3){top:28px}
+.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0;transform:scaleX(.3)}
+.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media (max-width:860px){
+  .nav{position:fixed;top:calc(var(--header-h) + 6px);right:8px;left:8px;z-index:55;flex-direction:column;
+    align-items:stretch;gap:4px;padding:14px;border:1px solid var(--color-line);border-radius:var(--r-m);
+    background:var(--color-surface);box-shadow:var(--shadow-m);transform:translateY(-14px) scale(.98);
+    opacity:0;visibility:hidden;transition:transform .28s cubic-bezier(.3,.7,.3,1),opacity .2s ease,visibility .28s}
+  .nav.is-open{transform:none;opacity:1;visibility:visible}
+  .nav a{padding:13px 16px;font-size:1rem;color:var(--color-ink)}
+  .nav .nav-cta{margin-top:6px;justify-content:center}
+  .btn-header{display:none}
+  .burger{display:block}
+}
+@media (min-width:861px){.btn-header{margin-left:8px}.nav-cta{display:none}}
+
+/* ===== 6. HERO ===== */
+.hero{padding-block:clamp(26px,5vw,60px) clamp(34px,5vw,70px)}
+.hero-grid{display:grid;gap:clamp(28px,4vw,48px);align-items:center}
+@media (min-width:940px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.badge{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border-radius:var(--r-pill);
+  background:rgba(255,194,61,.22);border:1px solid var(--color-line);font-size:.82rem;font-weight:700}
+.badge .dot{width:9px;height:9px;border-radius:50%;background:var(--color-primary);
+  box-shadow:0 0 0 4px rgba(255,122,61,.28)}
+.hero h1{margin-top:18px;max-width:17ch}
+.hero-sub{margin-top:18px;max-width:52ch;color:var(--color-ink-soft)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.hero-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.hero-chips .chip:nth-child(1) svg{color:var(--color-primary)}
+.hero-chips .chip:nth-child(3) svg{color:var(--color-accent)}
+/* Макет телефона */
+.phone-wrap{display:flex;justify-content:center}
+.phone{position:relative;width:min(320px,84vw);aspect-ratio:320/620;border-radius:44px;padding:12px;
+  background:linear-gradient(160deg,#2A2440,#1F1A2E);border:1px solid rgba(245,242,255,.16);
+  box-shadow:var(--shadow-m),0 0 0 8px rgba(31,26,46,.06)}
+.phone-screen{position:relative;height:100%;border-radius:34px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 0%,#F3EEFF,#FFFFFF 62%,#FFF1E6)}
+@media (prefers-color-scheme: dark){
+  .phone{box-shadow:var(--shadow-m),0 0 0 8px rgba(245,242,255,.05)}
+  .phone-screen{background:radial-gradient(120% 80% at 50% 0%,#241E3C,#1F1A2E 60%,#2A1D22)}
+}
+.notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:20px;
+  border-radius:var(--r-pill);background:#14111F;z-index:5}
+.screen-top{position:absolute;top:44px;left:0;right:0;display:flex;justify-content:center;z-index:4}
+.screen-tag{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5B5670;
+  background:rgba(255,255,255,.8);border:1px solid rgba(31,26,46,.08);padding:5px 12px;border-radius:var(--r-pill)}
+@media (prefers-color-scheme: dark){.screen-tag{color:#BDB6D6;background:rgba(20,17,31,.65);border-color:rgba(245,242,255,.12)}}
+.phone-cat{position:absolute;left:50%;top:54%;transform:translate(-50%,-48%);width:76%;color:var(--color-primary)}
+.scan-frame{position:absolute;inset:15% 11% 25%;z-index:3;pointer-events:none}
+.scan-frame svg{position:absolute;width:32px;height:32px;color:var(--color-secondary)}
+.scan-frame svg:nth-of-type(1){top:0;left:0}
+.scan-frame svg:nth-of-type(2){top:0;right:0;transform:rotate(90deg)}
+.scan-frame svg:nth-of-type(3){bottom:0;right:0;transform:rotate(180deg)}
+.scan-frame svg:nth-of-type(4){bottom:0;left:0;transform:rotate(270deg)}
+.scan-line{position:absolute;left:0;right:0;top:0;height:100%;animation:scan 3.6s ease-in-out infinite}
+.scan-line::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,transparent,var(--color-accent),var(--color-secondary),transparent);
+  box-shadow:0 0 18px 3px rgba(46,196,166,.6)}
+@keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(100%)}}
+.bubble{position:absolute;left:7%;right:7%;bottom:5%;z-index:4;padding:14px 16px;border-radius:18px 18px 18px 6px;
+  background:#1F1A2E;color:#F5F2FF;font-size:.86rem;font-weight:600;line-height:1.4;
+  box-shadow:0 16px 30px -14px rgba(0,0,0,.6);transition:opacity .45s ease,transform .45s cubic-bezier(.3,.7,.3,1)}
+.bubble.is-out{opacity:0;transform:translateY(10px) scale(.98)}
+.bubble b{display:block;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--color-warning);margin-bottom:4px}
+
+/* ===== 7. ВОЗМОЖНОСТИ ===== */
+.cards{display:grid;gap:clamp(14px,1.6vw,20px);grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+.card{position:relative;padding:clamp(20px,2.2vw,26px);border-radius:var(--r-m);background:var(--color-surface);
+  border:1px solid var(--color-line);box-shadow:var(--shadow-s);overflow:hidden;
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.card::before{content:"";position:absolute;inset-inline:0;top:0;height:4px;background:var(--accent,var(--color-primary));opacity:.9}
+.card:hover{transform:translateY(-6px);box-shadow:var(--shadow-m);border-color:var(--accent,var(--color-primary))}
+.card-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;margin-bottom:16px;
+  color:var(--accent,var(--color-primary));background:rgba(123,92,255,.12)}
+.card-ic svg{width:27px;height:27px}
+.card .tag{display:inline-block;margin-bottom:8px;font-size:.72rem;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent,var(--color-primary))}
+.card p{margin-top:10px;color:var(--color-ink-soft);font-size:.94rem}
+.stats{margin-top:clamp(18px,2.4vw,26px);border-radius:var(--r-m);padding:clamp(18px,2.4vw,26px);
+  background:#1F1A2E;color:#F5F2FF;box-shadow:var(--shadow-m);display:grid;gap:16px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.stat{display:flex;flex-direction:column;gap:4px;padding-inline:clamp(4px,1vw,14px);border-left:2px solid rgba(245,242,255,.16)}
+.stat:first-child{border-left:0}
+.stat b{font-family:var(--font-head);font-size:clamp(1.55rem,3vw,2.1rem);line-height:1.05;
+  background:linear-gradient(120deg,#FFC23D,#FF7A3D,#FF4F8B);-webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent}
+.stat span{font-size:.85rem;color:#BDB6D6}
+
+/* ===== 8. КАК РАБОТАЕТ ===== */
+.steps{position:relative;display:grid;gap:clamp(22px,3vw,28px);grid-template-columns:1fr}
+.steps::before{content:"";position:absolute;left:24px;top:30px;bottom:30px;width:2px;
+  background:linear-gradient(180deg,var(--color-primary),var(--color-secondary));opacity:.35}
+@media (min-width:900px){
+  .steps{grid-template-columns:repeat(3,1fr);gap:clamp(22px,3vw,40px)}
+  .steps::before{left:4%;right:4%;top:31px;bottom:auto;width:auto;height:2px;
+    background:linear-gradient(90deg,var(--color-primary),var(--color-magenta),var(--color-secondary))}
+}
+.step{position:relative;padding-left:66px}
+@media (min-width:900px){.step{padding-left:0;padding-top:66px}}
+.step-num{position:absolute;left:0;top:0;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--font-head);font-weight:700;font-size:1.15rem;color:#fff;background:var(--gradient-hero);
+  box-shadow:var(--shadow-glow);z-index:2}
+.step h3{margin-bottom:8px}
+.step p{color:var(--color-ink-soft);font-size:.94rem}
+
+/* ===== 9. ЭМОЦИИ: ЛЕНТА ===== */
+.marquee{position:relative;overflow:hidden;padding-block:8px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.marquee-track{display:flex;width:max-content;animation:marquee 36s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee-group{display:flex;gap:12px;flex:none;padding-right:12px}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.emo{display:inline-flex;align-items:center;gap:9px;padding:11px 18px;border-radius:var(--r-pill);
+  background:var(--color-surface);border:1px solid var(--color-line);font-weight:600;font-size:.9rem;
+  white-space:nowrap;box-shadow:var(--shadow-s);color:var(--emo,var(--color-primary))}
+.emo svg{width:20px;height:20px;flex:none}
+.emo span{color:var(--color-ink)}
+
+/* ===== 10. CTA И ФОРМА ===== */
+.cta-box{position:relative;border-radius:var(--r-l);padding:clamp(26px,4vw,52px);overflow:hidden;color:#fff;
+  background:var(--gradient-hero);box-shadow:0 30px 70px -30px rgba(123,92,255,.7)}
+.cta-box::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(90% 120% at 88% 6%,rgba(255,255,255,.24),transparent 58%),
+  linear-gradient(180deg,rgba(20,17,31,.14),rgba(20,17,31,.44))}
+.cta-inner{position:relative;z-index:1;display:grid;gap:clamp(22px,3vw,40px);align-items:center}
+@media (min-width:900px){.cta-inner{grid-template-columns:1.1fr .9fr}}
+.pill-white{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);font-size:.78rem;font-weight:700;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pill-white svg{width:16px;height:16px}
+.cta-box h2{margin-top:14px;max-width:18ch}
+.cta-box .lead{margin-top:14px;max-width:46ch;color:rgba(255,255,255,.94)}
+.form-title{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;opacity:.92;margin-bottom:10px}
+form{display:grid;gap:12px;padding:clamp(16px,2vw,22px);border-radius:var(--r-m);
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.field{display:grid;gap:8px}
+input[type="email"]{width:100%;padding:15px 18px;border-radius:var(--r-s);border:1px solid rgba(255,255,255,.55);
+  background:rgba(255,255,255,.94);color:#1F1A2E;font-weight:600}
+input[type="email"]::placeholder{color:#5B5670;font-weight:500}
+input[type="email"]:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.field.has-error input[type="email"]{border-color:#FF4F6D;box-shadow:0 0 0 3px rgba(255,79,109,.4)}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:.82rem;line-height:1.45;color:rgba(255,255,255,.96);cursor:pointer}
+.consent input{width:20px;height:20px;flex:none;margin:1px 0 0;accent-color:#2EC4A6;cursor:pointer}
+.err{display:none;font-size:.8rem;font-weight:600;color:#FFE3E8;align-items:center;gap:7px}
+.err::before{content:"";width:8px;height:8px;border-radius:50%;background:#FF4F6D;flex:none}
+.err.is-show{display:flex}
+.hint{font-size:.78rem;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:7px}
+.hint svg{width:15px;height:15px;flex:none}
+.success{display:none;gap:14px;align-items:center;padding:clamp(16px,2vw,22px);border-radius:var(--r-m);
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.36)}
+.success h3{font-size:1.08rem}
+.success p{font-size:.88rem;color:rgba(255,255,255,.92);margin-top:6px}
+.cat-cheer{width:130px;height:122px;flex:none;color:#FFF8F0}
+.cat-cheer .wave{transform-box:view-box;transform-origin:23px 104px;animation:wave 1.2s ease-in-out infinite}
+@keyframes wave{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(18deg)}}
+.is-sent form,.is-sent .form-title{display:none}
+.is-sent .success{display:flex}
+
+/* ===== 11. FOOTER ===== */
+.footer{border-top:1px solid var(--color-line);padding-block:clamp(28px,4vw,44px) 26px;margin-top:clamp(24px,4vw,48px)}
+.footer-grid{display:grid;gap:24px;align-items:start}
+@media (min-width:820px){.footer-grid{grid-template-columns:1.25fr 1fr 1fr}}
+.footer-about{margin-top:12px;max-width:36ch;color:var(--color-ink-soft);font-size:.9rem}
+.footer-nav{display:flex;flex-direction:column;gap:10px;font-size:.92rem;font-weight:600}
+.footer-nav a{color:var(--color-ink-soft);width:fit-content;transition:color .2s ease}
+.footer-nav a:hover{color:var(--color-secondary)}
+.footer h3{font-family:var(--font-body);font-size:.78rem;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--color-ink-soft)}
+.socials{display:flex;gap:10px;margin-top:16px}
+.socials a{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;border:1px solid var(--color-line);
+  background:var(--color-surface);color:var(--color-ink-soft);box-shadow:var(--shadow-s);
+  transition:transform .2s ease,color .2s ease,border-color .2s ease}
+.socials a:hover{transform:translateY(-3px);color:var(--color-secondary);border-color:var(--color-secondary)}
+.socials svg{width:21px;height:21px}
+.legal{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:22px;padding-top:18px;border-top:1px solid var(--color-line);
+  font-size:.82rem;color:var(--color-ink-soft);align-items:center;justify-content:space-between}
+.legal p{max-width:62ch;display:flex;align-items:center;gap:8px}
+.legal svg{width:16px;height:16px;flex:none}
+
+/* ===== 12. TOAST ===== */
+.toast{position:fixed;left:50%;bottom:22px;z-index:90;max-width:min(92vw,470px);
+  display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:var(--r-pill);
+  background:#1F1A2E;color:#F5F2FF;font-size:.88rem;font-weight:600;line-height:1.35;
+  border:1px solid rgba(245,242,255,.18);box-shadow:0 22px 44px -18px rgba(0,0,0,.7);
+  opacity:0;transform:translate(-50%,26px) scale(.96);pointer-events:none;
+  transition:opacity .3s ease,transform .3s cubic-bezier(.3,.7,.3,1)}
+.toast.is-show{opacity:1;transform:translate(-50%,0) scale(1)}
+.toast svg{width:22px;height:22px;flex:none;color:var(--color-warning)}
+
+/* ===== 13. REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  [data-reveal]{opacity:1!important;transform:none!important}
+  .paw-float,.scan-line{animation:none}
+  .scan-line{transform:translateY(45%)}
+  .marquee{-webkit-mask-image:none;mask-image:none}
+  .marquee-track{animation:none;width:auto;flex-wrap:wrap;justify-content:center}
+  [data-marquee-clone]{display:none}
+  .cat-cheer .wave{animation:none;transform:rotate(-10deg)}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SVG-СПРАЙТ (все иконки и коты) ===== -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-logo" viewBox="0 0 44 44">
+    <rect width="44" height="44" rx="12" fill="var(--color-primary)"/>
+    <path d="M11 21 9 8l10 6h6l10-6-2 13v6a13 13 0 0 1-22 0z" fill="var(--color-ink)"/>
+    <circle cx="17.5" cy="24" r="2.1" fill="var(--color-bg)"/><circle cx="26.5" cy="24" r="2.1" fill="var(--color-bg)"/>
+    <path d="M22 28.5 19.8 30.6h4.4z" fill="var(--color-magenta)"/>
+    <path d="M30 36h10a3 3 0 0 0 3-3v-5a3 3 0 0 0-3-3h-6l-4 3z" fill="var(--color-secondary)"/>
+    <circle cx="35" cy="30" r="1.2" fill="#fff"/><circle cx="39" cy="30" r="1.2" fill="#fff"/>
+  </symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor">
+    <ellipse cx="12" cy="16" rx="5.2" ry="4.2"/>
+    <ellipse cx="5.6" cy="10.6" rx="2.5" ry="3.1"/><ellipse cx="18.4" cy="10.6" rx="2.5" ry="3.1"/>
+    <ellipse cx="9.2" cy="5.6" rx="2.3" ry="2.9"/><ellipse cx="14.8" cy="5.6" rx="2.3" ry="2.9"/>
+  </symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7l1.2-2h6.2l1.2 2h1.7A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5z"/>
+    <circle cx="12" cy="12.4" r="3.4"/>
+  </symbol>
+  <symbol id="i-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.6" y="6.5" width="13" height="11" rx="2.6"/><path d="M15.6 11.4 21.4 8v8l-5.8-3.4z"/>
+  </symbol>
+  <symbol id="i-audio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M3 12v1M6.6 9v6M10.2 5.5v13M13.8 8v8M17.4 10.5v3M21 12v1"/>
+  </symbol>
+  <symbol id="i-corner" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
+    <path d="M4 19V9a5 5 0 0 1 5-5h10"/>
+  </symbol>
+  <symbol id="i-cat" viewBox="0 0 220 220">
+    <path d="M158 172c36-4 48-32 34-50-9-12-27-11-31 3-3 11 6 17 14 13" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round"/>
+    <path d="M62 200c-6-48 14-82 48-82s54 34 48 82z" fill="currentColor"/>
+    <path d="M66 62 60 20l42 21zM154 62l6-42-42 21z" fill="currentColor"/>
+    <ellipse cx="110" cy="88" rx="52" ry="43" fill="currentColor"/>
+    <path d="M73 55 70 32l19 10zM147 55l3-23-19 10z" fill="#FF4F8B" opacity=".45"/>
+    <ellipse cx="90" cy="84" rx="12.5" ry="14.5" fill="#2EC4A6"/><ellipse cx="130" cy="84" rx="12.5" ry="14.5" fill="#2EC4A6"/>
+    <rect x="87.4" y="73" width="5.2" height="22" rx="2.6" fill="#1F1A2E"/><rect x="127.4" y="73" width="5.2" height="22" rx="2.6" fill="#1F1A2E"/>
+    <path d="M110 102l-7 6h14z" fill="#FF4F8B"/>
+    <path d="M110 110v4M110 114c-6 8-16 6-18 0M110 114c6 8 16 6 18 0" fill="none" stroke="#1F1A2E" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+    <g stroke="#FFF8F0" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+      <path d="M78 106 42 98M78 114 44 122M142 106l36-8M142 114l34 8"/>
+    </g>
+    <ellipse cx="92" cy="198" rx="14" ry="8" fill="#FFC23D"/><ellipse cx="128" cy="198" rx="14" ry="8" fill="#FFC23D"/>
+  </symbol>
+  <symbol id="i-cat-cheer" viewBox="0 0 160 150">
+    <path d="M112 122c26 2 34-14 26-26-7-9-20-6-21 4-1 8 6 11 12 9" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+    <path d="M40 142c-4-38 12-62 40-62s44 24 40 62z" fill="currentColor"/>
+    <path d="M52 48 48 16l30 15zM120 48l4-32-30 15z" fill="currentColor"/>
+    <ellipse cx="86" cy="62" rx="40" ry="33" fill="currentColor"/>
+    <path d="M57 44 55 26l16 8zM115 44l2-18-16 8z" fill="#FF4F8B" opacity=".45"/>
+    <ellipse cx="74" cy="60" rx="9" ry="10.5" fill="#2EC4A6"/><ellipse cx="100" cy="60" rx="9" ry="10.5" fill="#2EC4A6"/>
+    <rect x="72" y="52" width="4" height="16" rx="2" fill="#1F1A2E"/><rect x="98" y="52" width="4" height="16" rx="2" fill="#1F1A2E"/>
+    <path d="M87 74l-5.5 5h11z" fill="#FF4F8B"/>
+    <path d="M87 80c-4 6-12 5-14 0M87 80c4 6 12 5 14 0" fill="none" stroke="#1F1A2E" stroke-width="2.6" stroke-linecap="round" opacity=".5"/>
+    <g stroke="#FFF8F0" stroke-width="2.2" stroke-linecap="round" opacity=".8"><path d="M62 78 36 74M62 86 38 92M112 78l26-4M112 86l24 6"/></g>
+    <ellipse cx="76" cy="140" rx="11" ry="6" fill="#FFC23D"/><ellipse cx="110" cy="140" rx="11" ry="6" fill="#FFC23D"/>
+  </symbol>
+  <symbol id="i-paw-arm" viewBox="0 0 34 52">
+    <path d="M17 52V16" stroke="currentColor" stroke-width="13" stroke-linecap="round"/>
+    <ellipse cx="17" cy="12" rx="10" ry="9" fill="currentColor"/>
+    <g fill="#FFC23D"><circle cx="9" cy="7" r="2.6"/><circle cx="17" cy="4.4" r="2.6"/><circle cx="25" cy="7" r="2.6"/></g>
+  </symbol>
+  <symbol id="e-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.4 2.1 2 3.5 2s2.5-.6 3.5-2"/><path d="M8.6 9.6c.9-1 1.9-1 2.8 0M12.6 9.6c.9-1 1.9-1 2.8 0"/></symbol>
+  <symbol id="e-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10.2 8.6 15.4 12l-5.2 3.4z"/></symbol>
+  <symbol id="e-bowl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M8 8c0-2 1.6-2 1.6-4M13.5 8c0-2 1.6-2 1.6-4"/></symbol>
+  <symbol id="e-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="e-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.4-7.5-9A4.5 4.5 0 0 1 12 8.6 4.5 4.5 0 0 1 19.5 11c0 4.6-7.5 9-7.5 9z"/></symbol>
+  <symbol id="e-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 2.5 5 13.5h6l-1.5 8L18 10.5h-6z"/></symbol>
+  <symbol id="e-hour" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3v4l4 4 4-4V3M8 21v-4l4-4 4 4v4"/></symbol>
+  <symbol id="e-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19H3z"/><path d="M12 10v4M12 16.6v.2"/></symbol>
+  <symbol id="e-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20C3 13 7 5 20 4c1 12-6 16-13 15z"/><path d="M11 13c2-2 5-3 7-3"/></symbol>
+  <symbol id="e-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 20 6v6c0 5-4 7.5-8 9-4-1.5-8-4-8-9V6z"/><path d="M9.5 12.5 12 15l2.5-2.5"/></symbol>
+  <symbol id="e-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c4 0 6-2.6 6-6 0-4.6-4.5-6.4-4-13-3.5 1.6-8 5.2-8 10 0 4.6 2.5 9 6 9z"/></symbol>
+  <symbol id="e-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4 4 0 0 1 .6-8 5.4 5.4 0 0 1 10.2 1.4A3.4 3.4 0 0 1 17.6 15z"/><path d="M9 18.5 8 21M13 18.5 12 21M17 18.5 16 21"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.2"/></symbol>
+  <symbol id="i-vk" viewBox="0 0 24 24" fill="currentColor"><path d="M12.9 17.6c-5.3 0-8.6-3.7-8.7-9.8h2.7c.1 4.5 2.1 6.4 3.7 6.8V7.8h2.5v3.8c1.5-.2 3.1-1.9 3.6-3.8h2.5c-.5 2.3-2 4-3.2 4.7 1.2.6 2.9 2 3.6 5.1h-2.8c-.5-1.9-1.9-3.4-3.7-3.6v3.6z"/></symbol>
+  <symbol id="i-tg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 4.3 2.9 11.6c-1 .4-1 1.9 0 2.2l4.6 1.5 1.8 5.3c.3.8 1.3 1 1.9.4l2.4-2.4 4.6 3.4c.7.5 1.7.2 1.9-.7l3.2-15c.2-1-.7-1.8-1.8-1.4zM9.6 14.1l8.1-6.4c.3-.3.8.1.5.4l-6.5 6.1-.4 3.6z"/></symbol>
+  <symbol id="i-yt" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.6a2.6 2.6 0 0 0-1.8-1.9C18 5.2 12 5.2 12 5.2s-6 0-7.8.5A2.6 2.6 0 0 0 2.4 7.6C2 9.4 2 12 2 12s0 2.6.4 4.4a2.6 2.6 0 0 0 1.8 1.9c1.8.5 7.8.5 7.8.5s6 0 7.8-.5a2.6 2.6 0 0 0 1.8-1.9c.4-1.8.4-4.4.4-4.4s0-2.6-.4-4.4zM10.1 15V9l5.2 3z"/></symbol>
+</svg>
+
+<!-- ===== ДЕКОРАТИВНЫЙ ФОН ===== -->
+<div class="bg-decor" aria-hidden="true">
+  <svg class="paw-float p1" viewBox="0 0 24 24"><use href="#i-paw"/></svg>
+  <svg class="paw-float p2" viewBox="0 0 24 24"><use href="#i-paw"/></svg>
+  <svg class="paw-float p3" viewBox="0 0 24 24"><use href="#i-paw"/></svg>
+  <div class="bg-grain"></div>
+</div>
+
+<div class="shell">
+  <!-- ===== ШАПКА ===== -->
+  <header class="header" id="header">
+    <div class="container header-in">
+      <a class="logo" href="#top" aria-label="Котоглот — наверх">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span>Котоглот</span>
+      </a>
+      <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="nav" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav" id="nav" aria-label="Основная навигация">
+        <a href="#features">Возможности</a>
+        <a href="#how">Как работает</a>
+        <a href="#emotions">Эмоции</a>
+        <a class="nav-cta" href="#cta">Ранний доступ</a>
+      </nav>
+      <a class="btn btn-primary btn-header" href="#cta">Ранний доступ</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ===== HERO ===== -->
+    <section class="hero container">
+      <div class="hero-grid">
+        <div>
+          <span class="badge" data-reveal style="--d:.05s"><span class="dot" aria-hidden="true"></span>Скоро запуск · ранний доступ открыт</span>
+          <h1 data-reveal style="--d:.14s">Узнайте, что на самом деле <span class="grad-text">чувствует ваш кот</span></h1>
+          <p class="hero-sub" data-reveal style="--d:.22s">Котоглот — ИИ, который читает эмоции кота по фото, видео и мяуканью и переводит их на человеческий. Полная версия уже в разработке — получите доступ первыми.</p>
+          <div class="hero-actions" data-reveal style="--d:.3s">
+            <a class="btn btn-primary" href="#cta">Получить ранний доступ</a>
+            <button class="btn btn-ghost" type="button" data-full-version>Полная версия</button>
+          </div>
+          <ul class="hero-chips" data-reveal style="--d:.38s">
+            <li class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-photo"/></svg>Фото</li>
+            <li class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-video"/></svg>Видео</li>
+            <li class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-audio"/></svg>Аудио</li>
+          </ul>
+        </div>
+        <div class="phone-wrap" data-reveal style="--d:.46s">
+          <div class="phone" role="img" aria-label="Экран телефона: Котоглот сканирует кота и показывает его реплику">
+            <div class="phone-screen">
+              <div class="notch" aria-hidden="true"></div>
+              <div class="screen-top" aria-hidden="true"><span class="screen-tag">Сканирую кота…</span></div>
+              <svg class="phone-cat" viewBox="0 0 220 220" aria-hidden="true"><use href="#i-cat"/></svg>
+              <div class="scan-frame" aria-hidden="true">
+                <svg viewBox="0 0 32 32"><use href="#i-corner"/></svg>
+                <svg viewBox="0 0 32 32"><use href="#i-corner"/></svg>
+                <svg viewBox="0 0 32 32"><use href="#i-corner"/></svg>
+                <svg viewBox="0 0 32 32"><use href="#i-corner"/></svg>
+                <div class="scan-line"></div>
+              </div>
+              <div class="bubble" id="bubble" aria-live="polite"><b>Котоглот переводит</b><span id="bubble-text">Ты опоздал с ужином на 4 минуты. Я всё запомнил</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ВОЗМОЖНОСТИ ===== -->
+    <section class="section container" id="features">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Возможности</span>
+        <h2>Что будет внутри</h2>
+        <p>Три режима анализа, один результат: понятная эмоция, перевод на человеческий и практичный совет хозяину.</p>
+      </div>
+      <div class="cards">
+        <article class="card" data-reveal style="--d:.05s;--accent:#FF7A3D">
+          <div class="card-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-photo"/></svg></div>
+          <span class="tag">Фото</span>
+          <h3>Мгновенный портрет настроения</h3>
+          <p>ИИ считывает положение ушей, усов, форму зрачков и позу — и за 3 секунды выдаёт эмоцию, перевод и понятный совет.</p>
+        </article>
+        <article class="card" data-reveal style="--d:.14s;--accent:#7B5CFF">
+          <div class="card-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-video"/></svg></div>
+          <span class="tag">Видео</span>
+          <h3>Язык тела в динамике</h3>
+          <p>Движение хвоста, жесты, походка и игра — нейросеть ловит то, что не видно на одном кадре.</p>
+        </article>
+        <article class="card" data-reveal style="--d:.23s;--accent:#2EC4A6">
+          <div class="card-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-audio"/></svg></div>
+          <span class="tag">Аудио</span>
+          <h3>Словарь мяуканья</h3>
+          <p>Мяу, мурчание, шипение и трели распознаются по интонации и превращаются в человеческие фразы.</p>
+        </article>
+      </div>
+      <div class="stats" data-reveal style="--d:.3s">
+        <p class="stat"><b data-count="3" data-suffix=" сек">0 сек</b><span>средний анализ одного снимка</span></p>
+        <p class="stat"><b data-count="12">0</b><span>эмоций в словаре модели</span></p>
+        <p class="stat"><b data-count="3">0</b><span>формата загрузки: фото, видео, аудио</span></p>
+      </div>
+    </section>
+
+    <!-- ===== КАК РАБОТАЕТ ===== -->
+    <section class="section container" id="how">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Процесс</span>
+        <h2>Как это работает</h2>
+        <p>От снимка до перевода — три шага, которые помещаются в один вечер.</p>
+      </div>
+      <ol class="steps">
+        <li class="step" data-reveal style="--d:.05s">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Снимите кота</h3>
+          <p>Фото, видео или запись мяуканья — прямо с телефона.</p>
+        </li>
+        <li class="step" data-reveal style="--d:.16s">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>ИИ изучает признаки</h3>
+          <p>Уши, усы, зрачки, поза, хвост и интонация — десятки сигналов сразу.</p>
+        </li>
+        <li class="step" data-reveal style="--d:.27s">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>Получите перевод</h3>
+          <p>Эмоция, забавная фраза от кота и совет, что делать дальше.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ===== ЭМОЦИИ ===== -->
+    <section class="section container" id="emotions">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Словарь</span>
+        <h2>12 эмоций, которые вы научитесь понимать</h2>
+        <p>К каждой эмоции — перевод на человеческий и рекомендация: от «не трогать хвост» до «пора ужин».</p>
+      </div>
+      <div class="marquee" data-reveal style="--d:.1s">
+        <div class="marquee-track" id="marquee">
+          <div class="marquee-group">
+            <span class="emo" style="--emo:#FF7A3D"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-smile"/></svg><span>Довольство</span></span>
+            <span class="emo" style="--emo:#E5A400"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-play"/></svg><span>Игривость</span></span>
+            <span class="emo" style="--emo:#FF4F6D"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-bowl"/></svg><span>Голод</span></span>
+            <span class="emo" style="--emo:#7B5CFF"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-eye"/></svg><span>Любопытство</span></span>
+            <span class="emo" style="--emo:#FF4F8B"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-heart"/></svg><span>Нежность</span></span>
+            <span class="emo" style="--emo:#1E9E85"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-bolt"/></svg><span>Раздражение</span></span>
+            <span class="emo" style="--emo:#5B5670"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-hour"/></svg><span>Скука</span></span>
+            <span class="emo" style="--emo:#FF7A3D"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-alert"/></svg><span>Тревога</span></span>
+            <span class="emo" style="--emo:#1E9E85"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-leaf"/></svg><span>Спокойствие</span></span>
+            <span class="emo" style="--emo:#7B5CFF"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-shield"/></svg><span>Страх</span></span>
+            <span class="emo" style="--emo:#FF4F6D"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-flame"/></svg><span>Злость</span></span>
+            <span class="emo" style="--emo:#5B5670"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#e-rain"/></svg><span>Тоска</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== РАННИЙ ДОСТУП ===== -->
+    <section class="section container" id="cta">
+      <div class="cta-box" data-reveal>
+        <div class="cta-inner">
+          <div>
+            <span class="pill-white"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-paw"/></svg>Лист ожидания</span>
+            <h2>Кот уже что-то говорит. Узнайте что — первыми</h2>
+            <p class="lead">Оставьте почту — пришлём ссылку на полную версию и первый месяц тарифа «Мурлыка» в подарок.</p>
+          </div>
+          <div>
+            <p class="form-title">Ранний доступ</p>
+            <form id="waitlist" novalidate>
+              <div class="field" id="field-email">
+                <label class="sr-only" for="email">Электронная почта</label>
+                <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="vasya@example.ru" required>
+                <p class="err" id="err-email" role="alert">Похоже, в адресе опечатка. Проверьте и попробуйте ещё раз.</p>
+              </div>
+              <label class="consent" for="consent">
+                <input id="consent" type="checkbox" required>
+                <span>Соглашаюсь на обработку персональных данных и получение писем о запуске</span>
+              </label>
+              <p class="err" id="err-consent" role="alert">Нужно согласие на обработку данных — без него кот не подпишет.</p>
+              <button class="btn btn-white" type="submit">Получить ранний доступ</button>
+              <p class="hint"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lock"/></svg>Никакого спама. Только одно письмо о запуске.</p>
+            </form>
+            <div class="success" id="success">
+              <svg class="cat-cheer" viewBox="0 0 160 150" aria-hidden="true">
+                <use href="#i-cat-cheer"/>
+                <use class="wave" href="#i-paw-arm" x="6" y="52" width="34" height="52"/>
+              </svg>
+              <div>
+                <h3>Готово! Кот уже машет вам лапой.</h3>
+                <p>Мы напишем, как только откроем полный доступ.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="logo" href="#top" aria-label="Котоглот — наверх">
+            <svg viewBox="0 0 44 44" aria-hidden="true"><use href="#i-logo"/></svg>
+            <span>Котоглот</span>
+          </a>
+          <p class="footer-about">ИИ-переводчик с кошачьего на человеческий: фото, видео и мяуканье превращаем в понятные эмоции.</p>
+          <ul class="socials" aria-label="Соцсети появятся к запуску">
+            <li><a href="#" data-stub aria-label="Котоглот во ВКонтакте"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vk"/></svg></a></li>
+            <li><a href="#" data-stub aria-label="Котоглот в Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tg"/></svg></a></li>
+            <li><a href="#" data-stub aria-label="Котоглот на YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-yt"/></svg></a></li>
+          </ul>
+        </div>
+        <nav class="footer-nav" aria-label="Разделы страницы">
+          <h3>Разделы</h3>
+          <a href="#features">Возможности</a>
+          <a href="#how">Как работает</a>
+          <a href="#emotions">Эмоции</a>
+          <a href="#cta">Ранний доступ</a>
+        </nav>
+        <div class="footer-nav">
+          <h3>Документы</h3>
+          <a href="#" data-stub>Политика конфиденциальности</a>
+          <a href="#" data-stub>Условия использования</a>
+          <button class="link-btn" type="button" data-full-version>Полная версия</button>
+        </div>
+      </div>
+      <div class="legal">
+        <p>© 2026 Котоглот. Развлекательный сервис — не заменяет консультацию ветеринара.</p>
+        <p><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg>Данные формы никуда не отправляются с этой страницы.</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-paw"/></svg>
+  <span id="toast-text"></span>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var FULL_VERSION_URL = '#'; // заменить на URL полного лендинга после запуска
+
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var STORE_KEY = 'kotogl…t_v1';
+  var cleanups = [];
+
+  /* ---------- Toast: показ/скрытие, авто-скрытие 2.6 с ---------- */
+  var toast = $('#toast'), toastText = $('#toast-text'), toastTimer = null;
+  function showToast(message) {
+    if (!toast) { return; }
+    toastText.textContent = message;
+    toast.classList.add('is-show');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { toast.classList.remove('is-show'); }, 2600);
+  }
+  cleanups.push(function () { window.clearTimeout(toastTimer); });
+
+  /* ---------- Заглушка «Полная версия» ---------- */
+  $$('[data-full-version]').forEach(function (el) {
+    var onClick = function (e) {
+      e.preventDefault();
+      if (FULL_VERSION_URL === '#') {
+        showToast('Полная версия в разработке — оставьте почту, и мы пришлём ссылку первыми');
+        var cta = $('#cta');
+        if (cta) { cta.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' }); }
+      } else {
+        window.location.href = FULL_VERSION_URL;
+      }
+    };
+    el.addEventListener('click', onClick);
+    cleanups.push(function () { el.removeEventListener('click', onClick); });
+  });
+
+  /* ---------- Заглушки соцсетей и юр. ссылок ---------- */
+  $$('[data-stub]').forEach(function (el) {
+    var onClick = function (e) { e.preventDefault(); showToast('Появится к запуску'); };
+    el.addEventListener('click', onClick);
+    cleanups.push(function () { el.removeEventListener('click', onClick); });
+  });
+
+  /* ---------- Липкая шапка ---------- */
+  var header = $('#header'), lastStuck = null;
+  function onScroll() {
+    var stuck = window.pageYOffset > 8;
+    if (stuck !== lastStuck) { header.classList.toggle('is-stuck', stuck); lastStuck = stuck; }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  onScroll();
+  cleanups.push(function () {
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', onScroll);
+  });
+
+  /* ---------- Бургер-меню ---------- */
+  var burger = $('#burger'), nav = $('#nav'), navOpen = false;
+  function setNav(open) {
+    navOpen = open;
+    nav.classList.toggle('is-open', open);
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+  }
+  burger.addEventListener('click', function () { setNav(!navOpen); });
+  nav.addEventListener('click', function (e) { if (e.target.closest('a')) { setNav(false); } });
+  var onKeydown = function (e) {
+    if (e.key === 'Escape' && navOpen) { setNav(false); burger.focus(); }
+  };
+  var onDocClick = function (e) {
+    if (navOpen && !e.target.closest('#nav') && !e.target.closest('#burger')) { setNav(false); }
+  };
+  document.addEventListener('keydown', onKeydown);
+  document.addEventListener('click', onDocClick);
+  cleanups.push(function () {
+    document.removeEventListener('keydown', onKeydown);
+    document.removeEventListener('click', onDocClick);
+  });
+
+  /* ---------- Reveal по скроллу (+ fallback без IntersectionObserver) ---------- */
+  var revealItems = $$('[data-reveal]');
+  if ('IntersectionObserver' in window && !reduced.matches) {
+    var revealObs = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) { return; }
+        entry.target.classList.add('is-in');
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    revealItems.forEach(function (el) { revealObs.observe(el); });
+    cleanups.push(function () { revealObs.disconnect(); });
+  } else {
+    revealItems.forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  /* ---------- Подсветка активного пункта меню ---------- */
+  var links = $$('#nav a[href^="#"]');
+  var linkById = {};
+  links.forEach(function (a) { linkById[a.getAttribute('href').slice(1)] = a; });
+  var watched = Object.keys(linkById)
+    .map(function (id) { return document.getElementById(id); })
+    .filter(function (el) { return !!el; });
+  if ('IntersectionObserver' in window && watched.length) {
+    var navObs = new IntersectionObserver(function (entries) {
+      var visible = entries.filter(function (e) { return e.isIntersecting; });
+      if (!visible.length) { return; }
+      /* самый верхний из видимых — он и активен */
+      visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+      links.forEach(function (a) { a.removeAttribute('aria-current'); });
+      var active = linkById[visible[0].target.id];
+      if (active) { active.setAttribute('aria-current', 'true'); }
+    }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+    watched.forEach(function (s) { navObs.observe(s); });
+    cleanups.push(function () { navObs.disconnect(); });
+  }
+
+  /* ---------- Ротация фраз в пузыре ---------- */
+  var phrases = [
+    'Ты опоздал с ужином на 4 минуты. Я всё запомнил',
+    'Погладь. Нет, не там. Вот, теперь да',
+    'Эта коробка моя. И ты тоже мой',
+    'Я не сплю, я охраняю диван'
+  ];
+  var bubble = $('#bubble'), bubbleText = $('#bubble-text'), idx = 0, phraseTimer = null, swapTimer = null;
+  function nextPhrase() {
+    idx = (idx + 1) % phrases.length;
+    if (reduced.matches) { bubbleText.textContent = phrases[idx]; return; }
+    bubble.classList.add('is-out');
+    window.clearTimeout(swapTimer);
+    swapTimer = window.setTimeout(function () {
+      bubbleText.textContent = phrases[idx];
+      bubble.classList.remove('is-out');
+    }, 420);
+  }
+  function startPhrases() { stopPhrases(); phraseTimer = window.setInterval(nextPhrase, 4000); }
+  function stopPhrases() {
+    if (phraseTimer) { window.clearInterval(phraseTimer); phraseTimer = null; }
+  }
+  if (!reduced.matches) { startPhrases(); }
+  var onVisibility = function () {
+    if (document.hidden) { stopPhrases(); } else if (!reduced.matches) { startPhrases(); }
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  cleanups.push(function () {
+    document.removeEventListener('visibilitychange', onVisibility);
+    stopPhrases();
+    window.clearTimeout(swapTimer);
+  });
+
+  /* ---------- Count-up счётчиков ---------- */
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function runCount(el) {
+    var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+    var suffix = el.getAttribute('data-suffix') || '';
+    if (reduced.matches || !window.requestAnimationFrame) {
+      el.textContent = target.toLocaleString('ru-RU') + suffix;
+      return;
+    }
+    var start = null, dur = 1300;
+    function tick(ts) {
+      if (start === null) { start = ts; }
+      var p = Math.min((ts - start) / dur, 1);
+      el.textContent = Math.round(target * easeOutCubic(p)).toLocaleString('ru-RU') + suffix;
+      if (p < 1) { window.requestAnimationFrame(tick); }
+    }
+    window.requestAnimationFrame(tick);
+  }
+  var counters = $$('[data-count]');
+  if ('IntersectionObserver' in window) {
+    var countObs = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) { return; }
+        runCount(entry.target);
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+    counters.forEach(function (el) { countObs.observe(el); });
+    cleanups.push(function () { countObs.disconnect(); });
+  } else {
+    counters.forEach(runCount);
+  }
+
+  /* ---------- Дублирование ленты для бесшовной прокрутки ---------- */
+  var marquee = $('#marquee');
+  if (marquee && !reduced.matches) {
+    var group = marquee.querySelector('.marquee-group');
+    if (group) {
+      var clone = group.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('data-marquee-clone', '');
+      marquee.appendChild(clone);
+    }
+  }
+
+  /* ---------- Форма лист ожидания ---------- */
+  var cta = $('#cta'), form = $('#waitlist'), email = $('#email'), consent = $('#consent'),
+      fieldEmail = $('#field-email'), errEmail = $('#err-email'), errConsent = $('#err-consent');
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Zа-яА-Я]{2,}$/;
+
+  function isStored() {
+    try { return window.localStorage.getItem(STORE_KEY) === '1'; } catch (e) { return false; }
+  }
+  function remember() {
+    try { window.localStorage.setItem(STORE_KEY, '1'); } catch (e) { /* приватный режим — пропускаем */ }
+  }
+  if (isStored()) { cta.classList.add('is-sent'); }
+
+  function setError(input, box, on) {
+    box.classList.toggle('is-show', on);
+    input.setAttribute('aria-invalid', on ? 'true' : 'false');
+  }
+  consent.addEventListener('change', function () {
+    if (consent.checked) { setError(consent, errConsent, false); }
+  });
+  email.addEventListener('input', function () {
+    if (EMAIL_RE.test(email.value.trim())) {
+      setError(email, errEmail, false);
+      fieldEmail.classList.remove('has-error');
+    }
+  });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var okEmail = EMAIL_RE.test(email.value.trim());
+    var okConsent = consent.checked;
+    setError(email, errEmail, !okEmail);
+    fieldEmail.classList.toggle('has-error', !okEmail);
+    setError(consent, errConsent, !okConsent);
+    if (!okEmail) { email.focus(); return; }
+    if (!okConsent) { consent.focus(); return; }
+    remember();
+    cta.classList.add('is-sent');
+    showToast('Вы в списке — кот передаёт привет');
+  });
+
+  /* ---------- Освобождение таймеров и observers ---------- */
+  var onPageHide = function () {
+    cleanups.forEach(function (fn) { fn(); });
+  };
+  window.addEventListener('pagehide', onPageHide);
+})();
+</script>
+</body>
+</html>
